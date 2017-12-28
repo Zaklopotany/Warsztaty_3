@@ -9,23 +9,22 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import pl.coderslab.model.Solution;
+import pl.coderslab.model.Users;
 
-@WebServlet("/")
-
-public class Start extends HttpServlet {
+@WebServlet("/userDetail")
+public class UsersDetails extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-	public Start() {
-
-        super();
-    }
-    
+       
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		String solNum = getServletContext().getInitParameter("number-solutions");
-		int solNumInt = Integer.parseInt(solNum);
-		Solution[] tempSolArr = Solution.loadAll(solNumInt);
-		request.setAttribute("solArr", tempSolArr);
-		getServletContext().getRequestDispatcher("/View/index.jsp").forward(request, response);		
+		String userId = request.getParameter("id").toString();
+		Users tempUser = Users.loadById( userId);
+		Solution[] userSolArr = Solution.loadAllByUserId(userId);
+		request.setAttribute("user", tempUser);
+		request.setAttribute("solution", userSolArr);
 		
+		request.getServletContext()
+		.getRequestDispatcher("/View/userDetail.jsp")
+		.forward(request, response);
 	}
 
 }

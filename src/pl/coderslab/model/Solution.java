@@ -277,15 +277,14 @@ public class Solution {
 
 	}
 
-	public static Solution[] loadAllByUserId(String id) throws SQLException {
+	public static Solution[] loadAllByUserId(String id){
 		String sql = "select * from solution where users_id = ?";
 		ArrayList<Solution> tempSolList = new ArrayList<Solution>();
+		
 		try (Connection con = DbUtil.getConn()) {
-
 			PreparedStatement prepStat = con.prepareStatement(sql);
 			prepStat.setString(1, id);
 			try (ResultSet rs = prepStat.executeQuery();) {
-
 				while (rs.next()) {
 					Solution tempSol = new Solution();
 					tempSol.setId(rs.getInt("id"));
@@ -296,10 +295,8 @@ public class Solution {
 					tempSol.setUsersId(rs.getString("users_id"));
 
 					tempSolList.add(tempSol);
-
 				}
 			}
-
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -307,7 +304,6 @@ public class Solution {
 		tempSolList.toArray(solArr);
 
 		return solArr;
-
 	}
 
 	@Override

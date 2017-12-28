@@ -11,9 +11,10 @@
 </head>
 <body>
 <jsp:include page="header.jsp"/>
-<p> Szczegóły rozwiązania zadania</p>
+<h1> Szczegóły rozwiązania zadania</h1>
 
-<div>${solution.getDescription()} </div>
+<p>${solution.getDescription()} </p>
+
 <jsp:include page="footer.jsp"/>
 </body>
 </html>
