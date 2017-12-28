@@ -8,6 +8,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import pl.coderslab.model.Solution;
+
 @WebServlet("/")
 
 public class Start extends HttpServlet {
@@ -18,7 +20,12 @@ public class Start extends HttpServlet {
     }
     
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		response.getWriter().append("Served at: ").append(request.getContextPath());
+		String solNum = getServletContext().getInitParameter("number-solutions");
+		int solNumInt = Integer.parseInt(solNum);
+		Solution[] tempSolArr = Solution.loadAll(solNumInt);
+		request.setAttribute("solArr", tempSolArr);
+		getServletContext().getRequestDispatcher("/View/index.jsp").forward(request, response);		
+		
 	}
 	
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

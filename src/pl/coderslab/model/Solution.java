@@ -10,9 +10,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
-
 public class Solution {
 	private int id;
 	private LocalDateTime created;
@@ -20,10 +17,10 @@ public class Solution {
 	private String description;
 	private int excersise_id;
 	private BigInteger usersId;
+	private DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
 	// constructor
 	public Solution() {
-		// DOZROB local date time pozmieniać
 		this.created = LocalDateTime.now();
 		setUsersId("0");
 	}
@@ -53,28 +50,28 @@ public class Solution {
 	}
 
 	public String getCreated() {
-		DateTimeFormatter dtf = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
-		String created = dtf.print(this.created);
+		String created = this.created.format(dtf);
 		return created;
 	}
 
 	public Solution setCreated(String dateTimeCreated) {
-		DateTimeFormatter format = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
-		DateTime created = format.parseDateTime(dateTimeCreated);
+		dateTimeCreated = dateTimeCreated.substring(0, 19);
+		LocalDateTime created = LocalDateTime.parse(dateTimeCreated, dtf);
 		this.created = created;
 		return this;
 	}
 
 	public String getUpdated() {
-		DateTimeFormatter dtf = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
-		String updated = dtf.print(this.updated);
+		String updated = this.created.format(dtf);
 		return updated;
 	}
 
 	public Solution setUpdated(String dateTimeUpdated) {
-		DateTimeFormatter format = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
-		DateTime updated = format.parseDateTime(dateTimeUpdated);
-		this.updated = updated;
+		if (dateTimeUpdated != null) {
+			dateTimeUpdated = dateTimeUpdated.substring(0, 19);
+			LocalDateTime updated = LocalDateTime.parse(dateTimeUpdated, dtf);
+			this.updated = updated;
+		}
 		return this;
 	}
 
@@ -117,22 +114,27 @@ public class Solution {
 
 	// communcation with DB
 	// load All excersises
-	public static Solution[] loadAll(Connection con) throws SQLException {
+	public static Solution[] loadAll() {
 		ArrayList<Solution> solution = new ArrayList<Solution>();
-		Statement stat = con.createStatement();
-		ResultSet rs = stat.executeQuery("Select * from solution;");
 
-		while (rs.next()) {
-			Solution tempSol = new Solution();
-			tempSol.setId(rs.getInt("id"));
-			tempSol.setCreated(rs.getString("created"));
-			tempSol.setUpdated(rs.getString("updated"));
-			tempSol.setDescription(rs.getString("description"));
-			tempSol.setExcersiseId(rs.getInt("excersise_id"));
-			tempSol.setUsersId(rs.getString("users_id"));
+		try (Connection con = DbUtil.getConn()) {
+			Statement stat = con.createStatement();
 
-			solution.add(tempSol);
+			try (ResultSet rs = stat.executeQuery("Select * from solution;");) {
+				while (rs.next()) {
+					Solution tempSol = new Solution();
+					tempSol.setId(rs.getInt("id"));
+					tempSol.setCreated(rs.getString("created"));
+					tempSol.setUpdated(rs.getString("updated"));
+					tempSol.setDescription(rs.getString("description"));
+					tempSol.setExcersiseId(rs.getInt("excersise_id"));
+					tempSol.setUsersId(rs.getString("users_id"));
 
+					solution.add(tempSol);
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
 		Solution[] solArr = new Solution[solution.size()];
 		solution.toArray(solArr);
@@ -143,26 +145,29 @@ public class Solution {
 
 	// Load all solutons limited int
 
-	public static Solution[] loadAll(Connection con, int limit) throws SQLException {
-		String sql = "Select * from solution "
-				+ "order by created desc " 
-				+ "limit ?;";
+	public static Solution[] loadAll(int limit) {
+		String sql = "Select * from solution " + "order by created desc " + "limit ?;";
 		ArrayList<Solution> solution = new ArrayList<Solution>();
-		PreparedStatement prepStat = con.prepareStatement(sql);
-		prepStat.setInt(1, limit);
-		try (ResultSet rs = prepStat.executeQuery()) {
-			while (rs.next()) {
-				Solution tempSol = new Solution();
-				
-				tempSol.setId(rs.getInt("id"));
-				tempSol.setCreated(rs.getString("created"));
-				tempSol.setUpdated(rs.getString("updated"));
-				tempSol.setDescription(rs.getString("description"));
-				tempSol.setExcersiseId(rs.getInt("excersise_id"));
-				tempSol.setUsersId(rs.getString("users_id"));
-				
-				solution.add(tempSol);
+		try (Connection con = DbUtil.getConn()) {
+			PreparedStatement prepStat = con.prepareStatement(sql);
+			prepStat.setInt(1, limit);
+			try (ResultSet rs = prepStat.executeQuery()) {
+				while (rs.next()) {
+					Solution tempSol = new Solution();
+
+					tempSol.setId(rs.getInt("id"));
+					tempSol.setCreated(rs.getString("created"));
+					tempSol.setUpdated(rs.getString("updated"));
+					tempSol.setDescription(rs.getString("description"));
+					tempSol.setExcersiseId(rs.getInt("excersise_id"));
+					tempSol.setUsersId(rs.getString("users_id"));
+
+					solution.add(tempSol);
+				}
 			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
 		Solution[] solArr = new Solution[solution.size()];
 		solution.toArray(solArr);
@@ -172,26 +177,29 @@ public class Solution {
 
 	// load excersise by id
 
-	public static Solution loadById(Connection con, int id) throws SQLException {
+	public static Solution loadById(int id) {
 		String sql = "Select * from solution where id = ?;";
-		PreparedStatement prepStat = con.prepareStatement(sql);
-		prepStat.setInt(1, id);
-		ResultSet rs = prepStat.executeQuery();
-
 		Solution tempSol = null;
-		while (rs.next()) {
-			tempSol = new Solution();
-			tempSol.setId(rs.getInt("id"));
-			tempSol.setCreated(rs.getString("created"));
-			tempSol.setUpdated(rs.getString("updated"));
-			tempSol.setDescription(rs.getString("description"));
-			tempSol.setExcersiseId(rs.getInt("excersise_id"));
-			tempSol.setUsersId(rs.getString("users_id"));
-
+		try (Connection con = DbUtil.getConn()) {
+			PreparedStatement prepStat = con.prepareStatement(sql);
+			prepStat.setInt(1, id);
+			
+			try (ResultSet rs = prepStat.executeQuery()) {
+				while (rs.next()) {
+					tempSol = new Solution();
+					tempSol.setId(rs.getInt("id"));
+					tempSol.setCreated(rs.getString("created"));
+					tempSol.setUpdated(rs.getString("updated"));
+					tempSol.setDescription(rs.getString("description"));
+					tempSol.setExcersiseId(rs.getInt("excersise_id"));
+					tempSol.setUsersId(rs.getString("users_id"));
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
 
 		return tempSol;
-
 	}
 
 	// save or update
@@ -269,24 +277,31 @@ public class Solution {
 
 	}
 
-	public static Solution[] loadAllByUserId(Connection con, String id) throws SQLException {
+	public static Solution[] loadAllByUserId(String id) throws SQLException {
 		String sql = "select * from solution where users_id = ?";
 		ArrayList<Solution> tempSolList = new ArrayList<Solution>();
+		try (Connection con = DbUtil.getConn()) {
 
-		PreparedStatement prepStat = con.prepareStatement(sql);
-		prepStat.setString(1, id);
-		ResultSet rs = prepStat.executeQuery();
+			PreparedStatement prepStat = con.prepareStatement(sql);
+			prepStat.setString(1, id);
+			try (ResultSet rs = prepStat.executeQuery();) {
 
-		while (rs.next()) {
-			Solution tempSol = new Solution();
-			tempSol.setId(rs.getInt("id"));
-			tempSol.setCreated(rs.getString("created"));
-			tempSol.setUpdated(rs.getString("updated"));
-			tempSol.setDescription(rs.getString("description"));
-			tempSol.setExcersiseId(rs.getInt("excersise_id"));
-			tempSol.setUsersId(rs.getString("users_id"));
+				while (rs.next()) {
+					Solution tempSol = new Solution();
+					tempSol.setId(rs.getInt("id"));
+					tempSol.setCreated(rs.getString("created"));
+					tempSol.setUpdated(rs.getString("updated"));
+					tempSol.setDescription(rs.getString("description"));
+					tempSol.setExcersiseId(rs.getInt("excersise_id"));
+					tempSol.setUsersId(rs.getString("users_id"));
 
-			tempSolList.add(tempSol);
+					tempSolList.add(tempSol);
+
+				}
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
 		Solution[] solArr = new Solution[tempSolList.size()];
 		tempSolList.toArray(solArr);

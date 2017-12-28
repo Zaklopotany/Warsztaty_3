@@ -1,6 +1,7 @@
 package pl.coderslab.model;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 
 import javax.naming.Context;
@@ -10,6 +11,7 @@ import javax.sql.DataSource;
 
 public class DbUtil {
 	private static DataSource ds;
+
 
 	public static Connection getConn() throws SQLException {
 		return getInstance().getConnection();
@@ -27,5 +29,7 @@ public class DbUtil {
 		}
 		return ds;
 	}
+	
+	
 
 }
