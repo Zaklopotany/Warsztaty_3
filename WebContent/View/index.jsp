@@ -21,7 +21,7 @@ tr:nth-child(even) {
 </head>
 <body>
 	<jsp:include page="header.jsp" />
-	<p>Ostatnie rozwiązania</p>
+	<h2>Ostatnie rozwiązania</h2>
 
 	<table>
 		<thead align="left">

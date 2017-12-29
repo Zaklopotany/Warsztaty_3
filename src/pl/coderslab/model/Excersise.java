@@ -53,19 +53,23 @@ public class Excersise {
 
 	// communcation with DB
 	// load All excersises
-	public static Excersise[] loadAll(Connection con) throws SQLException {
+	public static Excersise[] loadAll() {
 		ArrayList<Excersise> excersise = new ArrayList<Excersise>();
-		Statement stat = con.createStatement();
-		ResultSet rs = stat.executeQuery("Select * from excersise;");
-
-		while (rs.next()) {
-			Excersise tempExce = new Excersise();
-			tempExce.setId(rs.getInt("id"));
-			tempExce.setTitle(rs.getString("title"));
-			tempExce.setDescription(rs.getString("description"));
-
-			excersise.add(tempExce);
-
+		String sql ="Select * from excersise;";
+		try (Connection con = DbUtil.getConn()) {
+			Statement stat = con.createStatement();
+			try ( ResultSet rs = stat.executeQuery(sql)) {
+				while (rs.next()) {
+					Excersise tempExce = new Excersise();
+					tempExce.setId(rs.getInt("id"));
+					tempExce.setTitle(rs.getString("title"));
+					tempExce.setDescription(rs.getString("description"));
+		
+					excersise.add(tempExce);
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
 		Excersise[] exceArr = new Excersise[excersise.size()];
 		excersise.toArray(exceArr);
@@ -76,21 +80,27 @@ public class Excersise {
 
 	// load excersise by id
 
-	public static Excersise loadById(Connection con, int id) throws SQLException {
+	public static Excersise loadById( int id) {
 		String sql = "Select * from excersise where id = ?;";
-		PreparedStatement prepStat = con.prepareStatement(sql);
-		prepStat.setInt(1, id);
-		ResultSet rs = prepStat.executeQuery();
-
 		Excersise tempExce = null;
-		while (rs.next()) {
-			tempExce = new Excersise();
-			tempExce.setId(rs.getInt("id"));
-			tempExce.setDescription(rs.getString("description"));
-			tempExce.setTitle(rs.getString("title"));
-
+		try (Connection con = DbUtil.getConn()) {
+			PreparedStatement prepStat = con.prepareStatement(sql);
+			prepStat.setInt(1, id);
+			try (ResultSet rs = prepStat.executeQuery()) {
+				
+				while (rs.next()) {
+					tempExce = new Excersise();
+					tempExce.setId(rs.getInt("id"));
+					tempExce.setDescription(rs.getString("description"));
+					tempExce.setTitle(rs.getString("title"));
+					
+				}
+				
+				
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
-
 		return tempExce;
 
 	}

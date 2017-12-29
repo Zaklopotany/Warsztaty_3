@@ -30,8 +30,9 @@ public class UserGroup {
 		return name;
 	}
 
-	public void setName(String name) {
+	public UserGroup setName(String name) {
 		this.name = name;
+		return this;
 	}
 
 	public int getId() {
@@ -69,50 +70,52 @@ public class UserGroup {
 
 	// load excersise by id
 
-	public static UserGroup loadById(Connection con, int id) throws SQLException {
+	public static UserGroup loadById(int id) {
 		String sql = "Select * from user_group where id = ?;";
-		PreparedStatement prepStat = con.prepareStatement(sql);
-		prepStat.setInt(1, id);
-		ResultSet rs = prepStat.executeQuery();
-
 		UserGroup tempUserGroup = null;
-		while (rs.next()) {
-			tempUserGroup = new UserGroup();
-			tempUserGroup.setId(rs.getInt("id"));
-			tempUserGroup.setName(rs.getString("name"));
-
+		try (Connection con = DbUtil.getConn()) {
+			PreparedStatement prepStat = con.prepareStatement(sql);
+			prepStat.setInt(1, id);
+			try (ResultSet rs = prepStat.executeQuery();) {
+				while (rs.next()) {
+					tempUserGroup = new UserGroup();
+					tempUserGroup.setId(rs.getInt("id"));
+					tempUserGroup.setName(rs.getString("name"));
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
 
 		return tempUserGroup;
-
 	}
 
 	// save or update
-	public void SaveToDB(Connection con) throws SQLException {
+	public void SaveToDB() {
+		try (Connection con = DbUtil.getConn()) {
+			if (this.getId() == 0) {
+				String sql = "insert into user_group (name) values (?);";
+				String[] genCol = { "id" };
+				PreparedStatement prepStat = con.prepareStatement(sql, genCol);
+				prepStat.setString(1, this.getName());
+				prepStat.executeUpdate();
 
-		if (this.getId() == 0) {
-			String sql = "insert into user_group (name) values (?);";
-			String[] genCol = { "id" };
-			PreparedStatement prepStat = con.prepareStatement(sql, genCol);
-
-			prepStat.setString(1, this.getName());
-
-			prepStat.executeUpdate();
-			ResultSet rs = prepStat.getGeneratedKeys();
-
-			if (rs.next()) {
-				this.setId(rs.getInt(1));
+				try (ResultSet rs = prepStat.getGeneratedKeys();) {
+					if (rs.next()) {
+						this.setId(rs.getInt(1));
+					}
+				}
+			} else {
+				String sql = "Update user_group set name=? where id = ?";
+				PreparedStatement prepStat = con.prepareStatement(sql);
+				
+				prepStat.setString(1, this.getName());
+				prepStat.setInt(2, this.getId());
+				prepStat.executeUpdate();
 			}
-		} else {
-			String sql = "Update user_group set name=? where id = ?";
-			PreparedStatement prepStat = con.prepareStatement(sql);
-			prepStat.setString(1, this.getName());
-			prepStat.setInt(2, this.getId());
-
-			prepStat.executeUpdate();
-
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
-
 	}
 
 	public void delete(Connection con) throws SQLException {

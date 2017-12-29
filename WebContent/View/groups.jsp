@@ -10,7 +10,8 @@
 <title>Insert title here</title>
 </head>
 <body>
-	<jsp:include page="/View/header.jsp" />
+	<jsp:include page="/View/header.jsp" /><br>
+	<a href="<c:url value="/Groups?id=0"/>">Dodaj Nową Grupę</a>
 	<table>
 		<thead align="left">
 			<tr>
@@ -23,10 +24,15 @@
 				<c:forEach begin="0" step="1" end="${fn:length(groups) - 1}"
 					varStatus="status">
 					<tr>
-						<td>${groups[status.index].getName() }</td>
-						<td><a href="<c:url 
-						value ="/groupDetails?id=${groups[status.index].getId()}"/>">
-								Użytkownicy</a></td>
+						<td><a
+							href="<c:url 
+						value ="/groupDetails?id=
+						${groups[status.index].getId()}"/>">
+								${groups[status.index].getName() }</a></td>
+						<td><a
+							href="<c:url value="/Groups?id=
+							${groups[status.index].getId() }"/>">
+							Edycja</a></td>
 					</tr>
 
 				</c:forEach>

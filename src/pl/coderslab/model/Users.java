@@ -10,6 +10,8 @@ import java.util.ArrayList;
 
 import org.mindrot.jbcrypt.BCrypt;
 
+
+
 public class Users {
 	private BigInteger id;
 	private String userName;
@@ -20,6 +22,7 @@ public class Users {
 	public Users() {
 		this.id = new BigInteger("0");
 	}
+	
 
 	public Users(String userName, String email, String password, int personGroupId) {
 		this.id = new BigInteger("0");
@@ -55,6 +58,7 @@ public class Users {
 	public Users setPassword(String password) {
 		this.password = BCrypt.hashpw(password, BCrypt.gensalt());
 		return this;
+		
 	}
 
 	public int getPersonGroupId() {
@@ -77,27 +81,29 @@ public class Users {
 
 	// database function
 
-	public static Users[] loadAll(Connection con) throws SQLException {
+	public static Users[] loadAll() {
 		ArrayList<Users> users = new ArrayList<Users>();
-		Statement stat = con.createStatement();
-		ResultSet rs = stat.executeQuery("Select * from users;");
-
-		while (rs.next()) {
-			Users tempUsr = new Users();
-			tempUsr.setId(rs.getString("id"));
-			tempUsr.setUserName(rs.getString("username"));
-			tempUsr.setEmail(rs.getString("email"));
-			tempUsr.password = rs.getString("password");
-			tempUsr.setPersonGroupId(rs.getInt("person_group_id"));
-
-			users.add(tempUsr);
-
+		try (Connection con = DbUtil.getConn()) {
+			Statement stat = con.createStatement();
+			try (ResultSet rs = stat.executeQuery("Select * from users;");) {				
+				while (rs.next()) {
+					Users tempUsr = new Users();
+					tempUsr.setId(rs.getString("id"));
+					tempUsr.setUserName(rs.getString("username"));
+					tempUsr.setEmail(rs.getString("email"));
+					tempUsr.password = rs.getString("password");
+					tempUsr.setPersonGroupId(rs.getInt("person_group_id"));
+					
+					users.add(tempUsr);
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
 		Users[] usersArr = new Users[users.size()];
 		users.toArray(usersArr);
 
 		return usersArr;
-
 	}
 
 	// load excersise by id
@@ -123,37 +129,44 @@ public class Users {
 		}
 		return tempUsr;
 	}
+	
 
 	// save or update
-	public void SaveToDB(Connection con) throws SQLException {
+	public void SaveToDB(){
 
-		if (this.getId().equals("0")) {
-			String sql = "insert into users values (null,?,?,?,?);";
-			String[] genCol = { "id" };
-			PreparedStatement prepStat = con.prepareStatement(sql, genCol);
-
-			prepStat.setString(1, this.getUserName());
-			prepStat.setString(2, this.getEmail());
-			prepStat.setString(3, this.getPassword());
-			prepStat.setInt(4, this.getPersonGroupId());
-
-			prepStat.executeUpdate();
-			ResultSet rs = prepStat.getGeneratedKeys();
-
-			if (rs.next()) {
-				this.setId(rs.getString(1));
+		try (Connection con = DbUtil.getConn()) {
+			if (this.getId().equals("0")) {
+				String sql = "insert into users values (null,?,?,?,?);";
+				String[] genCol = { "id" };
+				
+				PreparedStatement prepStat = con.prepareStatement(sql, genCol);
+				
+				prepStat.setString(1, this.getUserName());
+				prepStat.setString(2, this.getEmail());
+				prepStat.setString(3, this.getPassword());
+				prepStat.setInt(4, this.getPersonGroupId());
+				
+				prepStat.executeUpdate();
+				ResultSet rs = prepStat.getGeneratedKeys();
+				
+				if (rs.next()) {
+					this.setId(rs.getString(1));
+				}
+			} else {
+				String sql = "Update users set username=?, email=?," + "password=?, person_group_id=? where id = ?";
+				PreparedStatement prepStat = con.prepareStatement(sql);
+				prepStat.setString(1, this.getUserName());
+				prepStat.setString(2, this.getEmail());
+				prepStat.setString(3, this.getPassword());
+				prepStat.setInt(4, this.getPersonGroupId());
+				prepStat.setString(5, this.getId());
+				
+				prepStat.executeUpdate();
+				
 			}
-		} else {
-			String sql = "Update users set username=?, email=?," + "password=?, person_group_id=? where id = ?";
-			PreparedStatement prepStat = con.prepareStatement(sql);
-			prepStat.setString(1, this.getUserName());
-			prepStat.setString(2, this.getEmail());
-			prepStat.setString(3, this.getPassword());
-			prepStat.setInt(4, this.getPersonGroupId());
-			prepStat.setString(5, this.getId());
-
-			prepStat.executeUpdate();
-
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
 
 	}

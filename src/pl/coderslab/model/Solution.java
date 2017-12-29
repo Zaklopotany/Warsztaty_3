@@ -248,37 +248,39 @@ public class Solution {
 		}
 	}
 
-	public static Solution[] loadAllByExcersiseId(Connection con, int id) throws SQLException {
-		String sql = "select s.excersise_id, s.users_id, s.created," + "s.updated,s.description "
+	public static Solution[] loadAllByExcersiseId(int id) {
+		String sql = "select s.id, s.excersise_id, s.users_id, s.created," + "s.updated,s.description "
 				+ "from solution s join excersise e " + "on s.excersise_id = e.id " + "where e.id = ? "
 				+ "order by s.created desc";
-
 		ArrayList<Solution> tempSolList = new ArrayList<Solution>();
-
-		PreparedStatement prepStat = con.prepareStatement(sql);
-		prepStat.setInt(1, id);
-		ResultSet rs = prepStat.executeQuery();
-
-		while (rs.next()) {
-			Solution tempSol = new Solution();
-			tempSol.setCreated(rs.getString("created"));
-			tempSol.setUpdated(rs.getString("updated"));
-			tempSol.setDescription(rs.getString("description"));
-			tempSol.setExcersiseId(rs.getInt("excersise_id"));
-			tempSol.setUsersId(rs.getString("users_id"));
-
-			tempSolList.add(tempSol);
+		try (Connection con = DbUtil.getConn()) {
+			PreparedStatement prepStat = con.prepareStatement(sql);
+			prepStat.setInt(1, id);
+			try (ResultSet rs = prepStat.executeQuery()) {				
+				while (rs.next()) {
+					Solution tempSol = new Solution();
+					tempSol.setId(rs.getInt("id"));
+					tempSol.setCreated(rs.getString("created"));
+					tempSol.setUpdated(rs.getString("updated"));
+					tempSol.setDescription(rs.getString("description"));
+					tempSol.setExcersiseId(rs.getInt("excersise_id"));
+					tempSol.setUsersId(rs.getString("users_id"));
+					
+					tempSolList.add(tempSol);
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
 
 		Solution[] solArr = new Solution[tempSolList.size()];
 		tempSolList.toArray(solArr);
 
 		return solArr;
-
 	}
 
 	public static Solution[] loadAllByUserId(String id){
-		String sql = "select * from solution where users_id = ?";
+		String sql = "select * from solution where users_id = ? order by created desc";
 		ArrayList<Solution> tempSolList = new ArrayList<Solution>();
 		
 		try (Connection con = DbUtil.getConn()) {
