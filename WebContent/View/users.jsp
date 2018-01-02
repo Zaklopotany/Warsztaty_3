@@ -12,7 +12,7 @@
 <body>
 <jsp:include page="/View/header.jsp"/>
 	<h1>Lista użytkowników</h1>
-	
+	<p><a href="<c:url value="/User?id=0"/>">Dodaj nowego użytkownika</a></p>
 	<table>
 		<thead>
 			<tr>

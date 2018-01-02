@@ -17,7 +17,7 @@
 		Email: 
 		<input type="text" name="email" value="${user.getEmail()}"><br>
 		Hasło: 
-		<input type="text" name="password" value=""><br>
+		<input type="password" name="password" value=""><br>
 		Id grupy: 		
 		<input type="text" name="group" value="${user.getPersonGroupId()}"><br>
 		<input type="submit">

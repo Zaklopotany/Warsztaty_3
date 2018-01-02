@@ -15,6 +15,7 @@
 	<table>
 		<thead align="left">
 			<tr>
+				<th>Id</th>
 				<th>Nazwa grupy</th>
 				<th>Akcje</th>
 			</tr>
@@ -24,6 +25,7 @@
 				<c:forEach begin="0" step="1" end="${fn:length(groups) - 1}"
 					varStatus="status">
 					<tr>
+						<td>${groups[status.index].getId() }</td>
 						<td><a
 							href="<c:url 
 						value ="/groupDetails?id=

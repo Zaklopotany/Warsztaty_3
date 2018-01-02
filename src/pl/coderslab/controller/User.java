@@ -40,7 +40,7 @@ public class User extends HttpServlet {
 		String email = request.getParameter("email");
 		String password = request.getParameter("password");
 		String group = request.getParameter("group");
-		Users tempUser = null;
+		Users tempUser = new Users();
 		if (!id.equals("0")) {
 			tempUser = Users.loadById(id).setEmail(email)
 					.setPersonGroupId(Integer.parseInt(group))

@@ -174,31 +174,27 @@ public class Excersise {
 	}
 
 	public static Excersise[] loadUnsolved(Connection con, String id) throws SQLException {
-		String sql = "SELECT * FROM excersise e " + "left join solution s " + "on (e.id = s.excersise_id) "
+		String sql = "SELECT e.id,e.title,e.description FROM excersise e "
+				+ "left join (Select * from solution where users_id = ?) s "
+				+ "on s.excersise_id = e.id "
 				+ "where s.users_id is null;";
-		SELECT * FROM excersise e 
-		left join (Select * from solution s where users_id = 4) s on s.excersise_id = e.id
 
 		List<Excersise> listExceUnsolved = new ArrayList<Excersise>();
-
 		PreparedStatement prepStat = con.prepareStatement(sql);
 		prepStat.setString(1, id);
 		try (ResultSet rs = prepStat.executeQuery()) {
 			while (rs.next()) {
 				Excersise tempExce = new Excersise();
 				tempExce.setId(rs.getInt("id"));
-				tempExce.setTitle("title");
-				tempExce.setDescription("description");
+				tempExce.setTitle(rs.getString("title"));
+				tempExce.setDescription(rs.getString("description"));
 
 				listExceUnsolved.add(tempExce);
-
 			}
 			Excersise[] tempExceArr = new Excersise[listExceUnsolved.size()];
 			listExceUnsolved.toArray(tempExceArr);
 			return tempExceArr;
-
 		}
-
 	}
 
 	@Override
